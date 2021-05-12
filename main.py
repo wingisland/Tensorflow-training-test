@@ -2,25 +2,31 @@ from tensorflow.keras import layers
 import tensorflow as tf
 from tensorflow.keras import Sequential
 from tensorflow.keras.preprocessing import image_dataset_from_directory as idfd
+import tensorflow.keras.optimizers as Optimizer
 import matplotlib.pyplot as plot
-
+import numpy as np
 
 # Load the images and their labels into a data set
 train_ds = idfd(
-    directory='data/seg_train/seg_train',
+    directory='../input/intel-image-classification/seg_train/seg_train',
     labels='inferred',
     label_mode='int',
-    seed=124
+    seed=1244,
+    image_size=(150, 150),
 )
 
 val_ds = idfd(
-    directory='data/seg_test/seg_test',
+    directory='../input/intel-image-classification/seg_test/seg_test',
     labels='inferred',
     label_mode='int',
-    seed=124
+    seed=1244,
+    image_size=(150, 150)
 )
 
-class_names = train_ds.class_names
+class_names = np.array(train_ds.class_names)
+print('Classes: ', class_names)
+
+class_names = np.array(train_ds.class_names)
 print('Classes: ', class_names)
 
 # Visualise the data we're working with
@@ -46,21 +52,20 @@ val_ds.map(lambda x, y: (normalization_layer(x), y))
 
 # Creating the model
 model = Sequential()
-model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+model.add(layers.Conv2D(200, kernel_size=(3, 3), activation='relu'))
+model.add(layers.Conv2D(160, kernel_size=(3, 3), activation='relu'))
+model.add(layers.MaxPooling2D(pool_size=(5, 5)))
 model.add(layers.Conv2D(140, kernel_size=(3, 3), activation='relu'))
 model.add(layers.Conv2D(100, kernel_size=(3, 3), activation='relu'))
-model.add(layers.Conv2D(60, kernel_size=(3, 3), activation='relu'))
-model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+model.add(layers.Conv2D(50, kernel_size=(3, 3), activation='relu'))
+model.add(layers.MaxPooling2D(pool_size=(5, 5)))
 model.add(layers.Flatten())
-model.add(layers.Dense(160, activation='relu'))
-model.add(layers.Dense(100, activation='relu'))
-model.add(layers.Dense(40, activation='relu'))
+model.add(layers.Dense(100, activation='softmax'))
+model.add(layers.Dense(50, activation='softmax'))
 model.add(layers.Dropout(rate=0.5))
 model.add(layers.Dense(6, activation='softmax'))
 
-model.compile(optimizer='adam',
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-              metrics=['accuracy'])
+model.compile(optimizer=Optimizer.Adam(learning_rate=0.0001), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
 epochs = 20
 history = model.fit(
