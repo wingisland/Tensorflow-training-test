@@ -8,19 +8,23 @@ import numpy as np
 
 # Load the images and their labels into a data set
 train_ds = idfd(
-    directory='../input/intel-image-classification/seg_train/seg_train',
+    directory='./data/seg_train/seg_train',
     labels='inferred',
     label_mode='int',
     seed=1244,
     image_size=(150, 150),
+    validation_split=0.3,
+    subset='training'
 )
 
 val_ds = idfd(
-    directory='../input/intel-image-classification/seg_test/seg_test',
+    directory='./data/seg_test/seg_test',
     labels='inferred',
     label_mode='int',
     seed=1244,
-    image_size=(150, 150)
+    image_size=(150, 150),
+    validation_split=0.3,
+    subset='validation'
 )
 
 class_names = np.array(train_ds.class_names)
