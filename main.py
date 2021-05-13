@@ -1,58 +1,75 @@
 from tensorflow.keras import layers
 import tensorflow as tf
 from tensorflow.keras import Sequential
-from tensorflow.keras.preprocessing import image_dataset_from_directory as idfd
-import tensorflow.keras.optimizers as Optimizer
+from sklearn.utils import shuffle
+import tensorflow.keras.optimizers as optimizer
 import matplotlib.pyplot as plot
 import numpy as np
+import os
+
+# Check the GPU
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
+
 
 # Load the images and their labels into a data set
-train_ds = idfd(
-    directory='./data/seg_train/seg_train',
-    labels='inferred',
-    label_mode='int',
-    seed=1244,
-    image_size=(150, 150),
-    validation_split=0.3,
-    subset='training'
-)
+def getImages(dataset_dir, img_size):
+    dataset_array = []
+    dataset_labels = []
 
-val_ds = idfd(
-    directory='./data/seg_test/seg_test',
-    labels='inferred',
-    label_mode='int',
-    seed=1244,
-    image_size=(150, 150),
-    validation_split=0.3,
-    subset='validation'
-)
+    class_counter = 0
 
-class_names = np.array(train_ds.class_names)
-print('Classes: ', class_names)
+    class_names = os.listdir(dataset_dir)
+    for current_class_name in class_names:
+        # Get class directory
+        class_dir = os.path.join(dataset_dir, current_class_name)
 
-class_names = np.array(train_ds.class_names)
+        # Keep track of the class that is being extracted
+        images_in_class = os.listdir(class_dir)
+        print("Class index", class_counter, ", ", current_class_name, ":", len(images_in_class))
+
+        for image_file in images_in_class:
+            if image_file.endswith(".jpg"):
+                image_file_dir = os.path.join(class_dir, image_file)
+
+                img = tf.keras.preprocessing.image.load_img(image_file_dir, target_size=(img_size, img_size))
+                img_array = tf.keras.preprocessing.image.img_to_array(img)
+
+                img_array = img_array / 255.0
+
+                dataset_array.append(img_array)
+                dataset_labels.append(class_counter)
+
+        # Increase the counter when we're done with a class
+        class_counter += 1
+
+    # Shuffle both lists the same way
+    dataset_array, dataset_labels = shuffle(dataset_array, dataset_labels, random_state=817328462)
+
+    # Transform to a numpy array
+    dataset_array = np.array(dataset_array)
+    dataset_labels = np.array(dataset_labels)
+    return dataset_array, dataset_labels, class_names
+
+# Get the training & validation data sets
+train_ds, train_classes, class_names = getImages('./data/seg_train/seg_train/', 150)
+
+print("Training Data Array Shape :", train_ds.shape)
 print('Classes: ', class_names)
 
 # Visualise the data we're working with
 plot.figure(figsize=(10, 10))
-for images, labels in train_ds.take(1):
-    for i in range(9):
-        ax = plot.subplot(3, 3, i + 1)
-        plot.imshow(images[i].numpy().astype('uint8'))
-        plot.title(class_names[labels[i]])
-        plot.axis('off')
+for i in range(9):
+    img = train_ds[i]
+    img_label = class_names[train_classes[i]]
+    print(img)
+
+    # Create a subplot for the image on the canvas
+    ax = plot.subplot(3, 3, i + 1)
+    plot.imshow(img)
+    plot.title(img_label)
+    plot.axis('off')
 
 # >> plot.show()
-
-# Tune the data to not pollute the memory while training
-AUTOTUNE = tf.data.AUTOTUNE
-train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)
-val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
-
-# Standardizing the data before training
-normalization_layer = layers.experimental.preprocessing.Rescaling(1./255)
-train_ds.map(lambda x, y: (normalization_layer(x), y))
-val_ds.map(lambda x, y: (normalization_layer(x), y))
 
 # Creating the model
 model = Sequential()
@@ -69,15 +86,12 @@ model.add(layers.Dense(50, activation='softmax'))
 model.add(layers.Dropout(rate=0.5))
 model.add(layers.Dense(6, activation='softmax'))
 
-model.compile(optimizer=Optimizer.Adam(learning_rate=0.0001), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=optimizer.Adam(learning_rate=0.0001), loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
 
-epochs = 20
-history = model.fit(
-  train_ds,
-  validation_data=val_ds,
-  epochs=epochs
-)
 
+epochs = 35
+history = model.fit(train_ds, train_classes, epochs=epochs, validation_split=0.30)
 print(model.summary())
 
 # Visualise the model accuracy
