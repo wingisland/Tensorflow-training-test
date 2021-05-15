@@ -10,7 +10,6 @@ import os
 # Check the GPU
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
-
 # Load the images and their labels into a data set
 def getImages(dataset_dir, img_size):
     dataset_array = []
@@ -74,21 +73,22 @@ for i in range(9):
 # Creating the model
 model = Sequential()
 model.add(layers.Conv2D(200, kernel_size=(3, 3), activation='relu'))
-model.add(layers.Conv2D(160, kernel_size=(3, 3), activation='relu'))
-model.add(layers.MaxPooling2D(pool_size=(5, 5)))
+model.add(layers.Conv2D(180, kernel_size=(3, 3), activation='relu'))
+model.add(layers.MaxPool2D(5, 5))
+model.add(layers.Conv2D(180, kernel_size=(3, 3), activation='relu'))
 model.add(layers.Conv2D(140, kernel_size=(3, 3), activation='relu'))
 model.add(layers.Conv2D(100, kernel_size=(3, 3), activation='relu'))
-model.add(layers.Conv2D(50, kernel_size=(3, 3), activation='relu'))
-model.add(layers.MaxPooling2D(pool_size=(5, 5)))
+model.add(layers.Conv2D(60, kernel_size=(3, 3), activation='relu'))
+model.add(layers.MaxPool2D(5, 5))
 model.add(layers.Flatten())
-model.add(layers.Dense(100, activation='softmax'))
-model.add(layers.Dense(50, activation='softmax'))
+model.add(layers.Dense(180, activation='relu'))
+model.add(layers.Dense(100, activation='relu'))
+model.add(layers.Dense(60, activation='relu'))
 model.add(layers.Dropout(rate=0.5))
 model.add(layers.Dense(6, activation='softmax'))
 
 model.compile(optimizer=optimizer.Adam(learning_rate=0.0001), loss='sparse_categorical_crossentropy',
               metrics=['accuracy'])
-
 
 epochs = 35
 history = model.fit(train_ds, train_classes, epochs=epochs, validation_split=0.30)

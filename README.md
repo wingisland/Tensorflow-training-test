@@ -10,14 +10,15 @@ This contest was held in 2019 on Kaggle. I will be working on the provided datas
 
 ## Table of contents
 
-- [Introduction]()
-  - [What is a CNN and how it works?]()
-- [Making predictions]()
-  - [Setting up the model]()
-  - [Evaluating the performance]()
-- [Tuning for better accuracy]()
-  - [Keras Tuner]()
-  - [Strides or pooling?]()
+- [Introduction](/docs/intro.md)
+  - [What is a CNN and how it works?](/docs/intro.md#what-is-a-cnn)
+- [Making predictions](/docs/modelling.md)
+  - [Setting up the model](/docs/modelling.md#creating-the-base-model)
+  - [Evaluating the performance](/docs/modelling.md#evaluation)
+- [Tuning for better accuracy](/docs/tuning.md)
+  - [Using a pretrained model](/docs/tuning.md)
+  - [Keras Tuner](/docs/tuning.md)
+  - [Strides or pooling?](/docs/tuning.md)
 
 
 

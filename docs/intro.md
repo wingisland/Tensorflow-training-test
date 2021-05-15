@@ -57,3 +57,4 @@ We have a few different pooling options to work with, I will shortly showcase tw
 
 
 ![CNN Graph](./plots/Avg Pooling.png)
+
