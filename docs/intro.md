@@ -26,7 +26,7 @@ In this very simple graph we can see how a very basic CNN is built. First we see
 
 ### Illustration of the convolution layer
 
-![CNN Graph](./plots/Conv Layer Animation.gif)
+![Layer animation](./plots/conv-layer-anim.gif)
 
 [_Image source._](https://eg.bucknell.edu/~cld028/courses/379-FA19/NN/convTF-Walk-Thru.html)
 
@@ -34,7 +34,7 @@ Above we can see how the convolution works in theory. Like said before it transf
 
 
 
- ![CNN Graph](./plots/Conv Image Example.jpg)
+ ![Conv. Image Example](./plots/conv-img-ex.jpg)
 
 
 
@@ -51,10 +51,9 @@ We have a few different pooling options to work with, I will shortly showcase tw
 
 
 
-
-![CNN Graph](./plots/Max Pooling.png)
-
+![CNN Graph](./plots/max-pool.png)
 
 
-![CNN Graph](./plots/Avg Pooling.png)
+
+![CNN Graph](./plots/avg-pool.png)
 
