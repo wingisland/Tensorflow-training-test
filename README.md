@@ -1,5 +1,5 @@
-![Header](https://i.imgur.com/XO0gE3J.png)
-
+![Finished](https://i.imgur.com/hzCFhps.png)
+![ML project](https://i.imgur.com/2tQPjrr.png)
 
 
 # Intel Image Classification Contest _(94%+ ACC)_
