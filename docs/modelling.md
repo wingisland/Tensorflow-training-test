@@ -76,7 +76,7 @@ Lovely, we know our classes now but I would also like to see how the images look
 
 
 
-![Images with their classes](plots\classes.png)
+![Images with their classes](plots/classes.png)
 
 
 
