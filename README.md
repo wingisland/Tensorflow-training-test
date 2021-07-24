@@ -1,4 +1,4 @@
-![Finished](https://i.imgur.com/hzCFhps.png)
+![In works](https://i.imgur.com/mkBGAdj.png)
 ![ML project](https://i.imgur.com/2tQPjrr.png)
 
 
