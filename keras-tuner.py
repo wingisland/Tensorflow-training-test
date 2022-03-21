@@ -27,7 +27,7 @@ class RegressionHyperModel(HyperModel):
                                             step=10), activation='relu'))
         model.add(layers.Dense(50, activation='relu'))
         model.add(layers.Dropout(rate=0.5))
-        model.add(layers.Dense(6, activation='softmax'))
+        model.add(layers.Dense(3, activation='softmax'))
 
 
         model.compile(optimizer=Optimizer.Adam(learning_rate=hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])), loss='sparse_categorical_crossentropy',
@@ -46,11 +46,11 @@ tuner_rs = RandomSearch(
             executions_per_trial=1)
 
 tuner_rs.search_space_summary()
-tuner_rs.search(train_ds, train_classes, epochs=15, validation_split=0.30)
+tuner_rs.search(train_ds, train_classes, batch_size=8, epochs=100, validation_split=0.30)
 
 # Get the best model
 best_model = tuner_rs.get_best_models(num_models=1)[0]
 
 # Evaluate
-val_ds, val_classes = getImages('../input/intel-image-classification/seg_test/seg_test/', 150)
+val_ds, val_classes = getImages('../input/intel-image-classification/seg_test/seg_test/', 100)
 best_model.evaluate(val_ds, val_classes, verbose=1)

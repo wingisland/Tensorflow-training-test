@@ -1,4 +1,5 @@
 from tensorflow.keras import layers as layers
+from tensorflow.python.keras.engine import base_layer_utils
 import tensorflow as tf
 from tensorflow.keras import Sequential
 from sklearn.utils import shuffle
@@ -6,7 +7,11 @@ import tensorflow.keras.optimizers as Optimizer
 import matplotlib.pyplot as plot
 import numpy as np
 import os
-
+from tensorflow.keras.models import Sequential, save_model, load_model
+from keras.preprocessing import image
+from random import randint
+from matplotlib.ticker import MultipleLocator
+import matplotlib.gridspec as gridspec
 # Check the GPU
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
@@ -28,7 +33,7 @@ def getImages(dataset_dir, img_size):
         print("Class index", class_counter, ", ", current_class_name, ":", len(images_in_class))
 
         for image_file in images_in_class:
-            if image_file.endswith(".jpg"):
+            if image_file.endswith(".png"):
                 image_file_dir = os.path.join(class_dir, image_file)
 
                 img = tf.keras.preprocessing.image.load_img(image_file_dir, target_size=(img_size, img_size))
@@ -87,15 +92,20 @@ model.add(layers.Dense(180, activation='relu'))
 model.add(layers.Dense(100, activation='relu'))
 model.add(layers.Dense(50, activation='relu'))
 model.add(layers.Dropout(rate=0.5))
-model.add(layers.Dense(6, activation='softmax'))
+model.add(layers.Dense(3, activation='softmax'))
+# add predictions layer
 
 # Compile the model
 model.compile(optimizer=Optimizer.Adam(learning_rate=0.0001), loss='sparse_categorical_crossentropy',
               metrics=['accuracy'])
 
 # Fit the model
-trained = model.fit(train_ds, train_classes, epochs=35, validation_split=0.30)
+trained = model.fit(train_ds, train_classes, batch_size=8, epochs=100, validation_split=0.30)
 model.summary()
+
+# # Save the model
+filepath = './saved_model'
+save_model(model, filepath)
 
 # Visualise the model accuracy
 # Visualise the model accuracy
@@ -104,7 +114,7 @@ val_acc = trained.history['val_accuracy']
 loss = trained.history['loss']
 val_loss = trained.history['val_loss']
 
-epochs_range = range(35)
+epochs_range = range(100)
 
 # Create the graphs
 plot.figure(figsize=(10, 10))
@@ -121,4 +131,53 @@ plot.plot(epochs_range, val_loss, label='Validation Loss')
 plot.legend(['Train', 'Test'], loc='upper right')
 
 # ..and show the graphs
-# >> plot.show()
+plot.show()
+
+# Load the model
+saved_model = load_model(filepath, compile = True)
+
+fig = plot.figure(figsize=(25, 25))
+outer = gridspec.GridSpec(5, 5, wspace=0.2, hspace=0.2)
+
+
+# get prdeict image
+pred_ds, pred_classes, pred_class_names  = getImages('./data/seg_pred/',150)
+
+for i in range(25):
+    pred_img =np.array([pred_ds[i]])
+    pred_prob = model.predict(pred_img)
+    print(pred_prob)
+    # Create a subplot for the image on the canvas
+    ax = plot.subplot(5, 5, i + 1)
+    ax.imshow(pred_img.squeeze())
+    plot.axis('off') 
+
+
+
+plot.show()
+
+
+
+
+fig = plot.figure(figsize=(25, 25))
+outer = gridspec.GridSpec(10, 10, wspace=1, hspace=1)
+# get prdeict image
+pred_ds, pred_classes, pred_class_names  = getImages('./data/seg_pred/',150)
+
+for i in range(25):
+    pred_img =np.array([pred_ds[i]])
+    pred_prob = model.predict(pred_img)
+    k=25
+    conpro = np.concatenate(pred_prob) 
+    labels = 'Good', 'Off', 'Bad'
+    labels_pos =[0,1,2]
+    x = np.array(labels_pos)
+    y = np.array(conpro)
+    plot.subplot(5, 5, i + 1)
+    plot.bar(x,y)
+    plot.xticks(labels_pos,labels)
+    anser= ('The '+ repr(i+1)+' picture')
+    plot.title(anser) 
+plot.show()
+
+
