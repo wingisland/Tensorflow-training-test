@@ -5,6 +5,11 @@ import kerastuner as kt
 from kerastuner import HyperModel, RandomSearch
 from main import train_ds, train_classes, getImages
 
+#Control Pannel
+################
+epochtime=3 
+batchsize=100
+################
 class RegressionHyperModel(HyperModel):
     def build(self, hp):
         model = Sequential()
@@ -46,7 +51,7 @@ tuner_rs = RandomSearch(
             executions_per_trial=1)
 
 tuner_rs.search_space_summary()
-tuner_rs.search(train_ds, train_classes, batch_size=8, epochs=100, validation_split=0.30)
+tuner_rs.search(train_ds, train_classes, batch_size=batchsize, epochs=epochtime, validation_split=0.30)
 
 # Get the best model
 best_model = tuner_rs.get_best_models(num_models=1)[0]
