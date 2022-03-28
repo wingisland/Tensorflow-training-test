@@ -14,15 +14,20 @@ from matplotlib.ticker import MultipleLocator
 import matplotlib.gridspec as gridspec
 import time
 import math
-
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
+import pandas as pd
 
 #Control pannel
+##############################################
 epochtime = 3                      #epoch time
-save = 1
-load = 0                           #save model
+save = 1                           #save model
+load = 0                           #load model
 filepath = './saved_model'         #model path
 load_filepath = '*path*'
  
+
+##############################################
 # Check the GPU
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 timenow=time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
@@ -81,7 +86,6 @@ for i in range(9):
     plot.axis('off')
 
 '''
-
 # Creating the model
 model = Sequential()
 model.add(layers.Conv2D(200, kernel_size=(3, 3), activation='relu'))
@@ -147,9 +151,11 @@ DIR = '/home/karma/git_home/intel-image-classification.git/data/seg_pred/seg_pre
 Predition_data_count=len([chunk for chunk in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, chunk))])
 print ("Predition data count",Predition_data_count)
 
-good_data_count = 0
-bad_data_count  = 0
-off_data_count  = 0
+good_data_count     = 0
+bad_data_count      = 0
+off_data_count      = 0
+invalid_value_count = 0
+pred_list           = []
 
 for i in range(Predition_data_count):
     pred_img =np.array([pred_ds[i]])
@@ -158,26 +164,38 @@ for i in range(Predition_data_count):
     first_index  = processed_pred_prob[0]
     second_index = processed_pred_prob[1]
     third_index  = processed_pred_prob[2]
-    if first_index  > 0.7:
-        good_data_count  += 1
-    if second_index > 0.7:
-        bad_data_count   += 1
-    if third_index  > 0.7:
-        off_data_count   += 1
-
+    if  first_index  > 0.7:
+        good_data_count     += 1
+        pred_list.append("good")
+    elif second_index > 0.7:
+        bad_data_count      += 1
+        pred_list.append("bad")
+    elif third_index  > 0.7:
+        off_data_count      += 1
+        pred_list.append("off")
+    else:
+        invalid_value_count += 1
+        pred_list.append("invalid_value")
 print("good size",good_data_count)
 print("bad size" ,bad_data_count)
 print("off size" ,off_data_count)
+print("invalid value size" ,invalid_value_count)
 valid_value    = good_data_count + bad_data_count + off_data_count
-invalid_value  = Predition_data_count - valid_value
-print("invalid value size",invalid_value)
+invalid_value  = invalid_value_count
+
+find_max = max(good_data_count,bad_data_count,off_data_count)
+precision = find_max / Predition_data_count
+precision_round_number = round(precision, 2)
+print("The precision is :", precision_round_number*100," % ")
+
 all_count      = [good_data_count,bad_data_count,off_data_count,invalid_value]
 outer = gridspec.GridSpec(10, 10, wspace=1, hspace=1)
-labels = 'Good', 'Off', 'Bad', 'invalid_value'
+labels = 'Good', 'Off', 'Bad', 'Invalid value'
 labels_pos =[0,1,2,3]
 x = np.array(labels_pos)
 y = np.array(all_count)
 plot.bar(x,y)
+plot.title(f"The precision is {precision_round_number*100} % ")
 plot.xticks(labels_pos,labels)
 plot.show()
 
@@ -214,3 +232,28 @@ plot.show()
 
 '''
 
+'''
+find_max = max(good_data_count,bad_data_count,off_data_count)
+precision = find_max / Predition_data_count
+print("The precision is :", precision*100," % ")
+'''
+def Confusion_matrix_flag():
+	if find_max == good_data_count:
+		return "good"
+	if find_max == bad_data_count:
+                return "bad"
+	if find_max == off_data_count:
+                return "off"
+flag = Confusion_matrix_flag()
+flag_list = [flag]*Predition_data_count
+
+y_true = flag_list
+y_pred = pred_list
+conmatrix = confusion_matrix(y_true, y_pred, labels=["good", "bad", "off","invalid_value"])
+print(conmatrix)
+df_cm = pd.DataFrame(conmatrix, index = [i for i in labels],columns = [i for i in labels])
+plot.figure(figsize = (10,7))
+sns.heatmap(df_cm, annot=True)
+plot.xlabel("Predicted Class")
+plot.ylabel("True Class")
+plot.show()
